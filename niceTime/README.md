@@ -13,9 +13,18 @@
 ----
 * timestamp ：轻松获取各类时间戳
 **使用**  
-秒级时间戳：  niceTime.timestamp()   
-原始时间戳：  niceTime.timestamp(0)  
-毫秒级时间戳： niceTime.timestamp(13)  
+秒级时间戳：  
+```
+niceTime.timestamp() 
+```
+原始时间戳：  
+```
+niceTime.timestamp(0)
+```
+毫秒级时间戳： 
+```
+niceTime.timestamp(13)
+```
 
 * now_time_elements ：可传入时间戳获取对应的时间，以列表格式返回
 **使用**  
