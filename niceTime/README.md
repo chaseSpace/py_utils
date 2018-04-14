@@ -53,3 +53,7 @@
 	strptime = '2018-01-09 10:20:11'
 	print niceTime.convert_to_stamp(strptime) # 1515464411.0
 ```
+
+#### 下载后存放到python环境的`Lib/site-packages`目录即可使用
+
+喜欢给个star把~
