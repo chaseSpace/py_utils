@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-# @Time     : 2018/4/16 21:41
-# @Author   : LEI
-# @IDE      : PyCharm
-# @PJ_NAME  : proxy_2_redis
+
 import redis
 import requests
 try:
@@ -12,7 +9,7 @@ except Exception:
 
 ######################
 """必要配置"""
-#获取代理IP的url
+#获取代理IP的url：示例为【快代理平台-开放代理-vip套餐，返回json数据】，其他平台则根据情况修改download_proxy_ip函数
 proxy_url = 'http://dev.kuaidaili.com/api/getproxy/?orderid=952388528527534&num=20&b_pcchrome=1&b_pcie=1&b_pcff=1&protocol=1&method=1&an_an=1&an_ha=1&sp1=1&sp2=1&quality=1&format=json&sep=1'
 #redis中代理IP池存储的key名
 list_key = 'proxy_list'
@@ -28,9 +25,9 @@ def init_redis():
     r = redis.Redis(connection_pool=pool)
     return r
 
-def download_proxy_ip(ip_url):
+def download_proxy_ip(proxy_url):
     """从平台获取一定数量的代理ip"""
-    data = requests.get(ip_url).json()
+    data = requests.get(proxy_url).json()
     if data.get('data').get('count')>0:
         #解析data后必须返回包含代理IP的列表：['11.11.11.11:80',]
         _list = data.get('data').get('proxy_list')
@@ -70,3 +67,5 @@ if __name__ == '__main__':
         else:
             print 'IP充足，剩余%s个'%number
             niceTime.sleep(1)
+
+
