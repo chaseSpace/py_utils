@@ -3,7 +3,7 @@ A small,convenient encapsulated TCP communication class.
 """
 
 import socket, threading
-import traceback
+from py_utils.util_tcp.commu_proto import read_socket_data, write_socket_data
 
 # const
 recv_max_bytes_len = 1024
@@ -30,23 +30,30 @@ class TcpSvr:
     @classmethod
     def process_conn(cls, conn: socket.socket, addr):
         """run as thread"""
-        conn.send(f"[svr] connected to server, your addr is {addr}".encode())
+        hi_msg = f"[svr] connected to server, your addr is {addr}"
+        if not write_socket_data(conn, hi_msg):
+            print(f'write_socket_data {addr} err')
+            conn.close()
+            return
+
         while True:
             try:
-                data = conn.recv(recv_max_bytes_len)
+                data = read_socket_data(conn)
             except Exception as e:
                 print(f'conntion:{addr} closed, err:{e.__class__, e.args}!')
                 conn.close()
                 return
-            cls.process_data(data)
+            cls.process_data(conn, data)
 
     @classmethod
-    def process_data(cls, data):
+    def process_data(cls, conn: socket.socket, data):
         if data:
             if isinstance(data, bytes):
                 data = data.decode()
-            send_bytes = conn.send(f'recv: {data}'.encode())
-            print('[svr] send_bytes', send_bytes)
+            if not write_socket_data(conn, data):
+                print(f'write_socket_data {conn.getpeername()} err')
+                conn.close()
+                return
 
     def __enter__(self):
         return self

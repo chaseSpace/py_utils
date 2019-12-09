@@ -1,7 +1,5 @@
 import socket, traceback
-
-# const
-recv_max_bytes_len = 1024
+from py_utils.util_tcp.commu_proto import read_socket_data, write_socket_data
 
 
 class TcpClient:
@@ -9,7 +7,7 @@ class TcpClient:
         self.skt = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             self.skt.connect((host, port))
-            data = self.skt.recv(recv_max_bytes_len)
+            data = read_socket_data(self.skt)
             print('[client] hello msg:', data)
         except:
             traceback.print_exc()
@@ -27,7 +25,9 @@ if __name__ == '__main__':
     with TcpClient('127.0.0.1', 9999)as client:
         while True:
             send_str = input('client input:')
-            # convert to bytes
-            sent_bytes = client.skt.send(send_str.encode())
-            data = client.skt.recv(recv_max_bytes_len)
+
+            if not write_socket_data(client.skt, send_str):
+                print(f'write_socket_data {client.skt.getpeername()} err')
+                break
+            data = read_socket_data(client.skt)
             print(f'[client] recv:', data, '\n')
