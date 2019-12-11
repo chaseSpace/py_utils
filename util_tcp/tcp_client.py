@@ -5,6 +5,10 @@ class Empty(Exception):
     pass
 
 
+class Full(Exception):
+    pass
+
+
 class WuKongQueueClient:
     def __init__(self, host, port):
         self.addr = [host, port]
@@ -15,14 +19,19 @@ class WuKongQueueClient:
     def put(self, data: bytes) -> bool:
         send_data = QUEUE_PUT + data
         self._tcp_client.write(send_data)
-        return self._tcp_client.read() == QUEUE_OK
+        ret = self._tcp_client.read()
+        if ret == QUEUE_OK:
+            return True
+        elif ret == QUEUE_FULL:
+            raise Full(f'WuKongQueue Svr-addr:{self.addr} is full')
+        return False
 
     def get(self) -> bytes:
         send_data = QUEUE_GET
         self._tcp_client.write(send_data)
         recv_data = self._tcp_client.read()
         if recv_data == QUEUE_EMPTY:
-            raise Empty(f'WuKongQueue svr-addr:{self.addr} is empty')
+            raise Empty(f'WuKongQueue Svr-addr:{self.addr} is empty')
         return recv_data.lstrip(QUEUE_HAVA_DATA)
 
     def is_full(self) -> bool:
@@ -55,7 +64,7 @@ if __name__ == '__main__':
         print(client.connected())
         print('empty', client.is_empty())
         print('full', client.is_full())
-        for i in range(3):
+        for i in range(4):
             print(client.put(i.to_bytes(length=2, byteorder='big')), i)
         print('empty', client.is_empty())
         print('full', client.is_full())

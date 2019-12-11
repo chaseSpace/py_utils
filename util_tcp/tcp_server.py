@@ -93,9 +93,10 @@ class WuKongQueue:
             if is_put:
                 if self._put(_bytes_data):
                     write_wukong_data(conn, WukongPkg(QUEUE_OK))
+                    print('push:', _bytes_data)
                 else:
-                    write_wukong_data(conn, WukongPkg(QUEUE_FAIL))
-                print('push:', _bytes_data)
+                    write_wukong_data(conn, WukongPkg(QUEUE_FULL))
+                    print('push:', _bytes_data, 'FULL')
                 continue
 
             if self._is_query_status_cmd(data):
