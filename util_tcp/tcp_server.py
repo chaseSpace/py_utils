@@ -3,7 +3,7 @@ A small,convenient encapsulated TCP communication class.
 """
 
 import socket, threading
-from py_utils.util_tcp.commu_proto import read_socket_data, write_socket_data
+from py_utils.util_tcp.commu_proto import read_wukong_data, write_wukong_data, WukongPkg
 
 # const
 recv_max_bytes_len = 1024
@@ -27,46 +27,63 @@ class TcpSvr:
     def accept(self):
         return self.skt.accept()
 
+    def close(self):
+        self.skt.close()
+
+
+# Customize a protocol to parse packages
+class WuKongSvr:
+    def __init__(self, host='127.0.0.1', port=9999, max_conns=5):
+        self._tcp_skt = TcpSvr(host, port, max_conns)
+        self._host = host
+        self._port = port
+
+    def run(self):
+        self._tcp_skt.listen()
+        print(f'tcp svr is listening to {self._host}:{self._port}')
+        while True:
+            conn, addr = self._tcp_skt.accept()
+            print('new conn:', addr)
+            new_thread(self.process_conn, kw={'conn': conn, 'addr': addr})
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._tcp_skt.close()
+
     @classmethod
     def process_conn(cls, conn: socket.socket, addr):
         """run as thread"""
         hi_msg = f"[svr] connected to server, your addr is {addr}"
-        if not write_socket_data(conn, hi_msg):
+        wukongpkg = WukongPkg(hi_msg)
+        if not write_wukong_data(conn, wukongpkg):
             print(f'write_socket_data {addr} err')
             conn.close()
             return
 
         while True:
             try:
-                data = read_socket_data(conn)
+                recv_wukongpkg = read_wukong_data(conn)
             except Exception as e:
                 print(f'conntion:{addr} closed, err:{e.__class__, e.args}!')
                 conn.close()
                 return
-            cls.process_data(conn, data)
+            cls.process_received_data_callback(conn, recv_wukongpkg)
+            # add your callback here
 
     @classmethod
-    def process_data(cls, conn: socket.socket, data):
-        if data:
-            if isinstance(data, bytes):
-                data = data.decode()
-            if not write_socket_data(conn, data):
-                print(f'write_socket_data {conn.getpeername()} err')
-                conn.close()
-                return
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.skt.close()
+    def process_received_data_callback(cls, conn: socket.socket, recv_wukongpkg: WukongPkg):
+        """customize your callback"""
+        data = recv_wukongpkg.data
+        print('recv:', data)
+        wukongpkg = WukongPkg(data.decode())
+        if not write_wukong_data(conn, wukongpkg):
+            print(f'write_socket_data {conn.getpeername()} err')
+            conn.close()
+            return
 
 
 if __name__ == '__main__':
-    with TcpSvr()as tcp_svr:
-        tcp_svr.listen()
-        print('tcp svr is listening to localhost:9999')
-        while True:
-            conn, addr = tcp_svr.accept()
-            print('new conn:', addr)
-            new_thread(tcp_svr.process_conn, kw={'conn': conn, 'addr': addr})
+    with WuKongSvr()as wk_svr:
+        wk_svr.run()
