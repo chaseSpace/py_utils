@@ -133,7 +133,7 @@ class WuKongQueue:
 
 
 if __name__ == '__main__':
-    with WuKongQueue()as wk_queue:
+    with WuKongQueue(max_size=3)as wk_queue:
         import time
 
         time.sleep(111)

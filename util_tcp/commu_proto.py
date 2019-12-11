@@ -51,7 +51,7 @@ STREAM_BUFFER = []
 
 
 def read_wukong_data(conn: socket.socket) -> WukongPkg:
-    "block read"
+    """block read"""
     global STREAM_BUFFER
 
     buffer = deepcopy(STREAM_BUFFER)

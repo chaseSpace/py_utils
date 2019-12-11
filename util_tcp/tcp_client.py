@@ -1,4 +1,3 @@
-import socket, traceback
 from py_utils.util_tcp.commu_proto import *
 
 
@@ -54,14 +53,15 @@ if __name__ == '__main__':
     with WuKongQueueClient('127.0.0.1', 9999)as client:
         # send_str = input('client input:')
         print(client.connected())
-        for i in range(11):
+        print('empty', client.is_empty())
+        print('full', client.is_full())
+        for i in range(3):
             print(client.put(i.to_bytes(length=2, byteorder='big')), i)
-        time.sleep(1)
+        print('empty', client.is_empty())
+        print('full', client.is_full())
         print(client.get())
         print(client.get())
         i = client.get()
         print(int.from_bytes(i, byteorder='big'))
-        for i in range(10):
-            i = client.get()
-            if i is not None:
-                print(int.from_bytes(i, byteorder='big'))
+        print('full', client.is_full())
+        print('empty', client.is_empty())
