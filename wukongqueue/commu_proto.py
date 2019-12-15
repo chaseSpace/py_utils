@@ -18,12 +18,13 @@ __all__ = ['read_wukong_data', 'write_wukong_data', 'WukongPkg', 'TcpSvr', 'TcpC
            'QUEUE_SIZE',
            'QUEUE_MAXSIZE',
            'QUEUE_RESET',
-           'QUEUE_PARAMS']
+           'QUEUE_PARAMS',
+           'QUEUE_CLIENTS']
 
-# stream delimeter
-delimeter = b'bye:)'
-delimeter_escape = b'bye:]'
-delimeter_len = len(delimeter)
+# stream delimiter
+delimiter = b'bye:)'
+delimiter_escape = b'bye:]'
+delimiter_len = len(delimiter)
 
 params_gap = ':'
 params_gap_escape = '-'
@@ -31,20 +32,10 @@ params_split = '\n'
 params_split_escape = '/n'
 
 params_escape_map = {
-    # delimeter: delimeter_escape,
+    # delimiter: delimiter_escape,
     params_gap: params_gap_escape,
     params_split: params_split_escape
 }
-
-'''
-key:ni:\nasd
-value:asdawd:
-escape: :->
-PARAMS:\nk:v\nk:v
-
-escaped:
-
-'''
 
 
 def msg_escape(msg: str) -> str:
@@ -82,22 +73,34 @@ def package_params(params: dict) -> str:
 
 
 class WukongPkg:
-    """customized communication msg"""
+    """customized communication msg package"""
 
-    def __init__(self, msg: bytes = b'', err=None):
+    def __init__(self, msg: bytes = b'', err=None, closed=False):
+        """
+        :param msg: raw bytes
+        :param err: error encountered reading socket
+        :param closed: whether the socket is closed.
+        """
         if not isinstance(msg, bytes):
             raise Exception('Support bytes only.')
-        self.data = msg
+        self.raw_data = msg
         self.err = err
+        self.skt_closed = closed
 
     def __repr__(self):
-        return self.data.decode()
+        return self.raw_data.decode()
 
     def __bool__(self):
-        return len(self.data) > 0
+        return len(self.raw_data) > 0
 
     def get_params(self) -> dict:
-        return parse_params(self.data.decode())
+        """TODO: complete the feature"""
+        return parse_params(self.raw_data.decode())
+
+    def is_valid(self) -> bool:
+        if self.skt_closed or self.err:
+            return False
+        return True
 
 
 # max read/write to 4KB
@@ -118,25 +121,27 @@ def read_wukong_data(conn: socket.socket) -> WukongPkg:
         try:
             data: bytes = conn.recv(MAX_BYTES)
         except Exception as e:
-            return WukongPkg(err=f'{e.__class__,e.args}')
+            return WukongPkg(err=f'{e.__class__, e.args}')
+        if data == b'':
+            return WukongPkg(closed=True)
 
-        bye_index = data.find(delimeter)
+        bye_index = data.find(delimiter)
         if bye_index == -1:
             buffer.append(data)
             continue
 
         buffer.append(data[:bye_index])
-        if len(data) < bye_index + delimeter_len:
-            STREAM_BUFFER.append(data[bye_index + delimeter_len:])
+        if len(data) < bye_index + delimiter_len:
+            STREAM_BUFFER.append(data[bye_index + delimiter_len:])
         break
-    msg = b''.join(buffer).replace(delimeter_escape, delimeter)
+    msg = b''.join(buffer).replace(delimiter_escape, delimiter)
     ret = WukongPkg(msg)
     return ret
 
 
 def write_wukong_data(conn: socket.socket, msg: WukongPkg) -> (bool, str):
     """NOTE: Sending an empty string is allowed"""
-    _bytes_msg = msg.data.replace(delimeter, delimeter_escape) + delimeter
+    _bytes_msg = msg.raw_data.replace(delimiter, delimiter_escape) + delimiter
     _bytes_msg_len = len(_bytes_msg)
     sent_index = -1
     err = ''
@@ -170,37 +175,27 @@ class TcpConn:
         return ok
 
     def read(self):
-        wukongpkg = read_wukong_data(self.skt)
-        self.err = wukongpkg.err
-        return wukongpkg.data
+        return read_wukong_data(self.skt)
 
     def close(self):
         self.skt.close()
 
 
 class TcpSvr(TcpConn):
-    def __init__(self, host='127.0.0.1', port=9999, max_conns=5):
+    def __init__(self, host='127.0.0.1', port=9999, max_conns=1):
         super().__init__()
         self.skt.bind((host, port))
         self.max_conns = max_conns
 
-    def listen(self):
-        self.skt.listen(self.max_conns)
-
     def accept(self):
+        self.skt.listen(self.max_conns)
         return self.skt.accept()
-
-    def close(self):
-        self.skt.close()
 
 
 class TcpClient(TcpConn):
     def __init__(self, host='127.0.0.1', port=9999):
         super().__init__()
         self.skt.connect((host, port))
-
-    def close(self):
-        self.skt.close()
 
 
 QUEUE_PUT = b'PUT'
@@ -218,3 +213,4 @@ QUEUE_SIZE = b'SIZE'
 QUEUE_MAXSIZE = b'MAXSIZE'
 QUEUE_RESET = b'RESET'
 QUEUE_PARAMS = b'PARAMS'
+QUEUE_CLIENTS = b'CLIENTS'
