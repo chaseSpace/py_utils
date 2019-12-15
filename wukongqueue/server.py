@@ -44,7 +44,7 @@ class WuKongQueue:
         new_thread(self._run)
 
     def _run(self):
-        print(f'tcp svr is listening to {self._host}:{self._port}')
+        print(f'WuKongQueue service is listening to {self._host}:{self._port}')
         while True:
             conn, addr = self._tcp_svr.accept()
             print('new conn:', addr)
