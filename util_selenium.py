@@ -18,7 +18,7 @@ chrome driver 75.0.3770.90
 
 
 class Config:
-    chrome_driver_path = 'C:\SPR\chromedriver-75.0.3770.exe'
+    chrome_driver_path = r'C:\Users\LEI\Desktop\chromedriver\chromedriver-75-0-3770-140.exe'
 
 
 __get_ip_url = ['http://whatismyip.akamai.com',

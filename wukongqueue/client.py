@@ -13,6 +13,17 @@ class Full(Exception):
     pass
 
 
+class _helper:
+    def __init__(self, inst):
+        self.inst: WuKongQueueClient = inst
+
+    def __enter__(self):
+        return self.inst
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.inst.__exit__(exc_type, exc_val, exc_tb)
+
+
 class WuKongQueueClient:
     def __init__(self, host, port, *, auto_reconnect=False):
         self.addr = (host, port)
@@ -119,7 +130,10 @@ class WuKongQueueClient:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        print(666)
         self.close()
+
+    helper = _helper
 
 
 del WukongPkg

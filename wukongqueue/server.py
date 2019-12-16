@@ -6,7 +6,6 @@ import socket
 import sys
 import threading
 from queue import Queue, Full
-from types import MethodType
 from typing import Union
 
 sys.path.append('../../')
@@ -20,6 +19,17 @@ def new_thread(f, kw={}):
 
 
 class _helper:
+    def __init__(self, inst):
+        self.inst: WuKongQueue = inst
+
+    def __enter__(self):
+        return self.inst
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.inst.__exit__(exc_type, exc_val, exc_tb)
+
+
+class _wk_svr_helper:
     def __init__(self, wk_inst):
         self.wk_inst = wk_inst
 
@@ -34,7 +44,8 @@ class _helper:
 class WuKongQueue:
     """PUT or GET support bytes only."""
 
-    def __init__(self, host='127.0.0.1', port=9999, max_conns=1, max_size=0):
+    def __init__(self, host='127.0.0.1', port=9999, *, name='', max_conns=1, max_size=0):
+        self.name = name
         self._tcp_svr = TcpSvr(host, port, max_conns)
         self._host = host
         self._port = port
@@ -44,7 +55,8 @@ class WuKongQueue:
         new_thread(self._run)
 
     def _run(self):
-        print(f'WuKongQueue service is listening to {self._host}:{self._port}')
+        print(
+            f'WuKongQueue [{self.name if self.name else "unknown"}] service is listening to {self._host}:{self._port}')
         while True:
             conn, addr = self._tcp_svr.accept()
             print('new conn:', addr)
@@ -61,7 +73,9 @@ class WuKongQueue:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def get(self, block=True, timeout=None, convert_method = None) -> Union[bytes, None]:
+    helper = _helper
+
+    def get(self, block=True, timeout=None, convert_method=None) -> Union[bytes, None]:
         """
         :param block: see also stdlib `queue.Queue.get` usage.
         :param timeout: see also stdlib `queue.Queue.get` usage.
@@ -91,7 +105,7 @@ class WuKongQueue:
         #     print(f'write_socket_data {addr} err:{err}')
         #     conn.close()
         #     return
-        with _helper(self):
+        with _wk_svr_helper(self):
             while True:
                 wukongpkg = read_wukong_data(conn)
                 if not wukongpkg.is_valid():
