@@ -1,3 +1,4 @@
+import os
 import platform
 
 OS_WIN = 1
@@ -46,8 +47,13 @@ def get_processor():
     return platform.processor()
 
 
+def get_desktop_path():
+    return os.path.join(os.path.expanduser("~"), 'Desktop')
+
+
 if __name__ == '__main__':
     print(get_os_arch())
     print(get_os_hostname())
     print(get_os_ver())
     print(get_processor())
+    print(get_desktop_path())

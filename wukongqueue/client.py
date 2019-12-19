@@ -18,7 +18,7 @@ class _helper:
         self.inst: WuKongQueueClient = inst
 
     def __enter__(self):
-        return self.inst
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.inst.__exit__(exc_type, exc_val, exc_tb)
@@ -48,6 +48,8 @@ class WuKongQueueClient:
     def get(self, convert_method=None) -> Union[bytes, AnyStr, None]:
         """
         :param convert_method: function
+        NOTE: the method will return None immediately when socket
+        conn was normally closed.
         """
         self._check_if_need_reconnect()
 
@@ -130,10 +132,10 @@ class WuKongQueueClient:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        print(666)
         self.close()
 
-    helper = _helper
+    def helper(self):
+        return _helper(self)
 
 
 del WukongPkg

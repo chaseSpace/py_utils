@@ -23,7 +23,7 @@ class _helper:
         self.inst: WuKongQueue = inst
 
     def __enter__(self):
-        return self.inst
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.inst.__exit__(exc_type, exc_val, exc_tb)
@@ -73,7 +73,8 @@ class WuKongQueue:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    helper = _helper
+    def helper(self):
+        return _helper(self)
 
     def get(self, block=True, timeout=None, convert_method=None) -> Union[bytes, None]:
         """
