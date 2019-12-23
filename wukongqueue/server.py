@@ -6,6 +6,7 @@ import socket
 import sys
 import threading
 from queue import Queue, Full
+from types import FunctionType
 from typing import Union
 
 sys.path.append('../../')
@@ -76,7 +77,7 @@ class WuKongQueue:
     def helper(self):
         return _helper(self)
 
-    def get(self, block=True, timeout=None, convert_method=None) -> Union[bytes, None]:
+    def get(self, block=True, timeout=None, convert_method: FunctionType = None) -> Union[bytes, None]:
         """
         :param block: see also stdlib `queue.Queue.get` usage.
         :param timeout: see also stdlib `queue.Queue.get` usage.

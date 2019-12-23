@@ -25,9 +25,17 @@ class _helper:
 
 
 class WuKongQueueClient:
-    def __init__(self, host, port, *, auto_reconnect=False):
+    def __init__(self, host, port, *, auto_reconnect=False, pre_connect=False):
+        """
+        :param host: ...
+        :param port: ...
+        :param auto_reconnect: do reconnect when conn is disconnected, instead of `raise` an exception.
+        :param pre_conn: By default, the class raises an exception when it fails to initialize connection,
+                if `pre_conn` is true, you can success to initialize client although server is
+                not ready yet.
+        """
         self.addr = (host, port)
-        self._tcp_client = TcpClient(*self.addr)
+        self._tcp_client = TcpClient(*self.addr, pre_connect=pre_connect)
         self._try_recover = auto_reconnect
 
     def put(self, data: Union[str, bytes], encoding='utf8') -> bool:
