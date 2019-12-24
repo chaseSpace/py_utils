@@ -3,6 +3,11 @@
 import socket
 from copy import deepcopy
 
+
+class SupportBytesOnly(Exception):
+    pass
+
+
 __all__ = ['read_wukong_data', 'write_wukong_data', 'WukongPkg', 'TcpSvr', 'TcpClient',
            'QUEUE_FULL',
            'QUEUE_GET',
@@ -82,10 +87,10 @@ class WukongPkg:
         :param closed: whether the socket is closed.
         """
         if not isinstance(msg, bytes):
-            raise Exception('Support bytes only.')
+            raise SupportBytesOnly('Support bytes only')
         self.raw_data = msg
         self.err = err
-        self.skt_closed = closed
+        self._is_skt_closed = closed
 
     def __repr__(self):
         return self.raw_data.decode()
@@ -98,7 +103,7 @@ class WukongPkg:
         return parse_params(self.raw_data.decode())
 
     def is_valid(self) -> bool:
-        if self.skt_closed or self.err:
+        if self._is_skt_closed or self.err:
             return False
         return True
 
@@ -111,7 +116,7 @@ STREAM_BUFFER = []
 
 
 def read_wukong_data(conn: socket.socket) -> WukongPkg:
-    """Block read"""
+    """Block read from tcp socket connection"""
     global STREAM_BUFFER
 
     buffer = deepcopy(STREAM_BUFFER)

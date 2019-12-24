@@ -45,7 +45,7 @@ class _wk_svr_helper:
 class WuKongQueue:
     """PUT or GET support bytes only."""
 
-    def __init__(self, host='127.0.0.1', port=9999, *, name='', max_conns=1, max_size=0):
+    def __init__(self, host='127.0.0.1', port=918, *, name='', max_conns=1, max_size=0):
         self.name = name
         self._tcp_svr = TcpSvr(host, port, max_conns)
         self._host = host
@@ -100,13 +100,6 @@ class WuKongQueue:
 
     def process_conn(self, addr, conn: socket.socket):
         """run as thread"""
-        # hi_msg = f"[svr] connected to server, your addr is {addr}"
-        # wukongpkg = WukongPkg(bytes(hi_msg, encoding='utf8'))
-        # ok, err = write_wukong_data(conn, wukongpkg)
-        # if not ok:
-        #     print(f'write_socket_data {addr} err:{err}')
-        #     conn.close()
-        #     return
         with _wk_svr_helper(self):
             while True:
                 wukongpkg = read_wukong_data(conn)

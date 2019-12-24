@@ -4,6 +4,8 @@ from typing import Union, AnyStr
 sys.path.append('../../')
 from py_utils.wukongqueue.commu_proto import *
 
+__all__ = ['WukongPkg', 'Empty', 'Full', 'WuKongQueueClient']
+
 
 class Empty(Exception):
     pass
@@ -30,7 +32,7 @@ class WuKongQueueClient:
         :param host: ...
         :param port: ...
         :param auto_reconnect: do reconnect when conn is disconnected, instead of `raise` an exception.
-        :param pre_conn: By default, the class raises an exception when it fails to initialize connection,
+        :param pre_connect: By default, the class raises an exception when it fails to initialize connection,
                 if `pre_conn` is true, you can success to initialize client although server is
                 not ready yet.
         """
@@ -127,7 +129,6 @@ class WuKongQueueClient:
         self._tcp_client.close()
 
     def _check_if_need_reconnect(self):
-        """:raises logging event when connect still failed"""
         if self._try_recover:
             if not self.connected():
                 try:
@@ -146,12 +147,10 @@ class WuKongQueueClient:
         return _helper(self)
 
 
-del WukongPkg
-
 if __name__ == '__main__':
     import time
 
-    with WuKongQueueClient('127.0.0.1', 9999, auto_reconnect=True)as client:
+    with WuKongQueueClient('127.0.0.1', 918, auto_reconnect=True)as client:
         # send_str = input('client input:')
 
         for i in range(11):
@@ -165,5 +164,3 @@ if __name__ == '__main__':
         # print(client.realtime_maxsize())
         # print('reset', client.reset(6))
         # print(client.realtime_maxsize())
-
-    print(222)
