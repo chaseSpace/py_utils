@@ -187,7 +187,7 @@ class TcpConn:
 
 
 class TcpSvr(TcpConn):
-    def __init__(self, host='127.0.0.1', port=9999, max_conns=1):
+    def __init__(self, host, port, max_conns=1):
         super().__init__()
         self.skt.bind((host, port))
         self.max_conns = max_conns
@@ -198,7 +198,7 @@ class TcpSvr(TcpConn):
 
 
 class TcpClient(TcpConn):
-    def __init__(self, host='127.0.0.1', port=9999, pre_connect=False):
+    def __init__(self, host, port, pre_connect=False):
         super().__init__()
         if not pre_connect:
             self.skt.connect((host, port))
