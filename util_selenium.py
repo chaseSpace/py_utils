@@ -159,6 +159,7 @@ def __get_brower(proxy={},
     chrome_options = Options()
 
     ops = []
+
     ops.append('--headless') if headless else ...
     ops.extend([
         '--disable-gpu',
@@ -167,9 +168,10 @@ def __get_brower(proxy={},
         '--disable-dev-shm-usage'
     ])
 
-    # log('get_brower: OS-%s'% os)
     system = platform.system()
     if system == 'Linux':
+        if '--headless' not in ops:
+            ops.append('--headless')
         ops.append('--no-sandbox')
 
     ops.append('user-agent=%s' % ua) if ua else ...
