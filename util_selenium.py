@@ -19,6 +19,7 @@ chrome driver 75.0.3770.90
 
 class Config:
     chrome_driver_path = r'C:\Users\LEI\Desktop\chromedriver\chromedriver-75-0-3770-140.exe'
+    linux_chrome_driver_path = r'/root/chromedriver'
 
 
 __get_ip_url = ['http://whatismyip.akamai.com',
@@ -115,7 +116,7 @@ def get_brower(proxy={},
                log=print,
                page_load_timeout=30,
                set_desired_capabilities=False,
-               chrome_driver_path=Config.chrome_driver_path):
+               chrome_driver_path=Config):
     # 尝试3次初始化br（低概率的崩溃可能）
     for i in range(3):
         try:
@@ -144,7 +145,7 @@ def __get_brower(proxy={},
                  log=print,
                  page_load_timeout=30,
                  set_desired_capabilities=False,
-                 chrome_driver_path=Config.chrome_driver_path):
+                 chrome_driver_path=None):
     """
     :param proxy: {"proto": "http(s)"|"socks5", "host": "127.0.0.1", "port": 8080}
     :param headless:
@@ -153,7 +154,7 @@ def __get_brower(proxy={},
     :param log: log handler
     :param page_load_timeout:
     :param set_desired_capabilities 此项控制 selenium的api是否是阻塞执行,设置此项为true，page_load_timeout就没有意义了
-    :param chrome_driver_path:
+    :param chrome_driver_path: str
     :return:
     """
     chrome_options = Options()
@@ -170,9 +171,14 @@ def __get_brower(proxy={},
 
     system = platform.system()
     if system == 'Linux':
+        if chrome_driver_path is None:
+            chrome_driver_path = Config.linux_chrome_driver_path
         if '--headless' not in ops:
             ops.append('--headless')
         ops.append('--no-sandbox')
+    else:
+        if chrome_driver_path is None:
+            chrome_driver_path = Config.chrome_driver_path
 
     ops.append('user-agent=%s' % ua) if ua else ...
 
