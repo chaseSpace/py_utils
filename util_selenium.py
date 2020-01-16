@@ -116,7 +116,7 @@ def get_brower(proxy={},
                log=print,
                page_load_timeout=30,
                set_desired_capabilities=False,
-               chrome_driver_path=Config):
+               chrome_driver_path=None):
     # 尝试3次初始化br（低概率的崩溃可能）
     for i in range(3):
         try:
