@@ -18,7 +18,7 @@ chrome driver 75.0.3770.90
 
 
 class Config:
-    chrome_driver_path = r'C:\Users\LEI\Desktop\chromedriver\chromedriver-75-0-3770-140.exe'
+    chrome_driver_path = r'C:\chromedriver\chromedriver-75-0-3770-140.exe'
     linux_chrome_driver_path = r'/root/chromedriver'
 
 
